@@ -1,0 +1,10 @@
+.report {
+    width: 900px;
+    height: 550px;
+    background-color: rgba(0,0,0,0.5);
+    margin: 40px auto;
+    color: white;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: bold;
+
+}

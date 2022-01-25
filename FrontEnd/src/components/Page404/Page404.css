@@ -1,0 +1,15 @@
+.Page404{
+    height: 100%;
+}
+.Page404 img{
+    background-position: center;
+    background-size: cover;
+    height: 100%;
+    position: relative;
+}
+
+.Page404 button {
+    position: absolute;
+    top: 90%;
+    right:46%;
+}

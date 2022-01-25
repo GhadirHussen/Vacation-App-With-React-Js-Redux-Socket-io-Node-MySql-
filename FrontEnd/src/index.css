@@ -1,0 +1,18 @@
+
+html , body , #root {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  height: 100%;
+} 
+
+
+
+body   {
+  background-image: url("/assets/images/cover1.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+
+}
+

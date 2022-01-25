@@ -1,0 +1,59 @@
+
+.Container {
+    text-align: center;
+    width: 100%;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+
+
+.Typography{
+    height: 80px;
+    width: 100%;
+    overflow-x: auto;
+    border-bottom: gray 1px solid;
+}
+
+.Typography::first-letter{
+    text-transform: uppercase;
+}
+
+.Typography1{
+    border-bottom: gray 1px solid;
+    width: 100%;
+    text-transform: uppercase;
+}
+
+table{
+    margin-top: 10px;
+    width: 100%;
+}
+
+table th {
+    width: 33%;
+ 
+}
+
+img{
+    height:190px;
+    width: 100%;
+}
+
+.link:visited , .link{
+    color: #f50057;
+}
+
+.Followersbox{
+  height:20px; 
+  width: 100px; 
+  margin: 10px auto; 
+  border: solid 2px white;
+  background-color: #90caf9;
+  border-radius: 5px;
+  color: white;
+} 
+
+.btnFollow {
+    width: 140px;
+    height: 40px;
+} 

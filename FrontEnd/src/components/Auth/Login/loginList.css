@@ -1,0 +1,30 @@
+.LoginList { 
+    display: inline-grid;
+    background: #ffffffbf;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 20px;
+    width: 600px;
+}
+
+.LoginList form{
+   padding: 20px;
+}
+
+.LoginList .errorsbox span{
+    font-family:'Segoe UI', Tahoma, Verdana, sans-serif;
+    color: red;
+    font-size: 15px;
+    border-bottom: red 1px solid;
+}
+
+.LoginList .NavLink{
+    color: black;
+    font-size: 15px;
+}
+
+.LoginList .butbox > * {
+    margin: 10px;
+}
+.LoginList h2 {
+    color: #555252 ;
+}

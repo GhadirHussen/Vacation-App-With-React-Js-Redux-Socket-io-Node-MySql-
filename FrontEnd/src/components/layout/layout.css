@@ -1,0 +1,33 @@
+
+.layout {
+    height: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: 10% 90%;
+    grid-template-areas: 
+    "header"
+    "main";
+}
+
+header{
+    grid-area: header;
+    width: 100%;
+    height: 100%;
+}
+
+main {
+    grid-area: main;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+ 
+ 
+ 
+    
+     
+    
+        
+    

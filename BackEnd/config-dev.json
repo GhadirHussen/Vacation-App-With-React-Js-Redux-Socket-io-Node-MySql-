@@ -1,0 +1,9 @@
+{
+    "isProduction": false,
+    "database": {
+        "host": "localhost",
+        "user": "root",
+        "password": "",
+        "name": "vacations"
+    }
+}
