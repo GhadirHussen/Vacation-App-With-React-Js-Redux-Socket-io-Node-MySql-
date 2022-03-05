@@ -1,5 +1,4 @@
-const sqlConnect = require('../sql/sql');
-
+const sqlConnect = require('../data-access-layer/sql');
 
 async function getAllVacations() {
     const sql = `SELECT vacations.vacationID, vacations.description, vacations.destination, vacations.imageName,
@@ -59,16 +58,18 @@ async function deleteVacation(id) {
 }
 
 
-async function updateVacation(vacation) {
+async function updateVacation(vacation) { 
+
     const sql = `
         UPDATE vacations SET
-        destination = '${vacation.destination}',
+        destination = '${vacation.destination}', 
         description = '${vacation.description}',
         fromDate = '${dateFormat(vacation.fromDate)}',
         toDate = '${dateFormat(vacation.toDate)}',
         imageName = '${vacation.imageName}',
         price = ${vacation.price}
         WHERE vacationID = ${vacation.vacationID}`;
+
     const info = await sqlConnect.executeAsync(sql);
     return info.affectedRows === 0 ? null : vacation;
 }

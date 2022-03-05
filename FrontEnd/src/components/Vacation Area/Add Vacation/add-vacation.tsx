@@ -1,15 +1,16 @@
 import React , {useState} from 'react'
-import axios from "axios";
 import { useHistory } from "react-router";
 import { useForm } from "react-hook-form";
 import store from '../../../Redux/store';
+import VacationService from '../../../Service/vacationService';
 import VacationModel from "../../../models/vacation-model";
 import { ActionType } from "../../../Redux/reducer";
 import io from 'socket.io-client';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
 import SaveIcon from '@material-ui/icons/Save';
-import './add-vacation.css';
+import alertService from '../../../Service/alertService';
+import './add-vacation.scss';
 
  
 
@@ -20,43 +21,31 @@ function AddVacation(): JSX.Element {
     const { register, handleSubmit, formState} = useForm<VacationModel>({});
     const socket = io.connect("http://localhost:3001");
     const [preview , setPreview] = useState(null);
-    const [errors , setErrors] = useState();
  
 
-    function addVacation(vacation: VacationModel) {
+    const addNewVacation = async(vacation: VacationModel) => {
 
-        const authAxios = axios.create({
-        
-            baseURL:'http://localhost:3001/api',
-            headers: {
-                Authorization : `Bearer ${localStorage.getItem('token')}` 
-            }
-        });
+        try {
+            const newVacation = await VacationService.addNewVacation(vacation);
 
-        
-        authAxios.post<VacationModel>('/vacations/new-vacation',VacationModel.convertToFormData(vacation))
-        .then(response => {
+            if(newVacation.vacationID === undefined || null) {
 
-            const addedVacation = response.data;
-
-            if(addedVacation.vacationID === undefined || null) {
                 alert('Missing something check the fields');
                 return;
-            } else{
+            } else{ 
+                alertService("Vacation has been added", 'success');
                 store.dispatch({
-                    type: ActionType.addNewVacation,
-                    payload: addedVacation
+                type: ActionType.addNewVacation,
+                payload: newVacation
                 });
                 history.push("/");
-                alert("Vacation has been added. ID: " + addedVacation.vacationID);
                 socket.emit("get-all-vacations");
             }
-        })
-        .catch(err => {
-            setErrors(err.response.data)
-            console.log(err.response.data);
-        });
+        } catch(err) {
+            return err;
+        }     
     }
+
 
     const handelChange = (e:  React.ChangeEvent<HTMLInputElement>) => {
         const imageSelected = (e.target as HTMLInputElement).files[0];
@@ -68,119 +57,106 @@ function AddVacation(): JSX.Element {
     return (
 
         <div className="add-container">
-            {
-                errors ? <h4 className='error'>{errors}</h4>
-                :
-                <h2>Add New Vacation</h2>
-            } 
             
-            <form onSubmit={handleSubmit(addVacation)}> 
-                <table>
 
-                    <tr>
-                        <th>Destination</th>
-                        <th>Price</th>
-                    </tr>
+            <h2>Add New Vacation</h2>
             
-                    <tr>
-                        <td>
-                            <Input type="text" name="destination"
-                            {...register('destination', { required: true, minLength: 3 ,maxLength:15 })}/>  
-                            {formState.errors.destination?.type === "required" &&
-                            <span className='span'>Missing destination !</span>
-                            }
-                            {formState.errors.destination?.type === "minLength" &&
-                            <span className='span'>Destination name too short !</span>
-                            }
-                            {formState.errors.destination?.type === "maxLength" &&
-                            <span className='span'>Destination name is too long !</span>
-                            }
+            
+            <form onSubmit={handleSubmit(addNewVacation)}> 
+                <div className='detailBox'>
+            
+                        <div className='inputBox'>
+                            <Input type="text" name="destination" 
+                            {...register('destination', { required: true, minLength: 3 ,maxLength:15 })}/>
+
+                            <div className='err'>
+                                {formState.errors.destination?.type === "required" &&
+                                <span className='span'>Missing destination !</span>
+                                }
+                                {formState.errors.destination?.type === "minLength" &&
+                                <span className='span'>Destination name too short !</span>
+                                }
+                                {formState.errors.destination?.type === "maxLength" &&
+                                <span className='span'>Destination name is too long !</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div className='inputBox' >
+                            <Input type="number"  name="price" placeholder='$'
+                            {...register("price", { required: true ,min:0, minLength: 3 ,maxLength: 4})}/>
                             
-                        </td>
-            
-                        <td>
-                            
-                            <Input type="number"  name="price"
-                            {...register("price", { required: true ,min:0, minLength: 3 ,maxLength: 4})}/>$
-                            {formState.errors.price?.type === "min" &&
-                            <span className='span'>Price can't be negative !</span>
+                            <div className='err'>
+                                {formState.errors.price?.type === "required" && 
+                                <span className='span'>Missing Price</span>}
+                                {formState.errors.price?.type === "min" &&
+                                <span className='span'>Price can't be negative !</span>
+                                }
+                                {formState.errors.price?.type === "minLength" &&
+                                <span className='span'>minimum 3 numbers !</span>
+                                }
+                                {formState.errors.price?.type === "maxLength" &&
+                                <span className='span'>maximum 4 numbers !</span>
                             }
-                            {formState.errors.price?.type === "minLength" &&
-                            <span className='span'>minimum 3 numbers !</span>
-                            }
-                            {formState.errors.price?.type === "maxLength" &&
-                            <span className='span'>maximum 4 numbers !</span>
-                            }
-                        </td>
-                    </tr>
+                            </div> 
+                        </div>
 
-                    <tr className='dis'>
-                        <th colSpan={2}>Description</th>
-                    </tr>
-
-                    <tr>
-                        <td colSpan={2}>
+                        <div className='description'>
                             <textarea
                             placeholder="Write description about new vacation"
-                            name="description"
+                            name="description"  className='input'
                             {...register('description', { required: true, minLength:5 })} 
                             />
-                            {formState.errors.description?.type === "required" &&
-                            <span className='span'>Missing description !</span>}
-                            {formState.errors.description?.type === "minLength" && <span>description too short.</span>}
-                        </td>
-                    </tr>
+                            <div className='err'>
+                                {formState.errors.description?.type === "required" &&
+                                <span className='span'>Missing description !</span>}
+                                {formState.errors.description?.type === "minLength" && <span>description too short.</span>}
+                            </div>
+                        </div>
 
-                    <tr>
-                        <th>Depart</th>
-                        <th>Return</th>
-                    </tr>
-
-                    <tr>
-                        <td> 
-                         
-                        
+                        <div className='inputBox'>
                             <Input type="date" name="fromDate"  
                             {...register('fromDate', { required: true, min: 0 })}/> 
-                            {formState.errors.fromDate?.type === "required" && 
-                            <span className='span'>Missing depart date !</span>}
-                                
-                        </td>
+                            <div className='err'>
+                                {formState.errors.fromDate?.type === "required" &&
+                                <span className='span'>Missing depart date !</span>}
+                            </div>
+                        </div>
 
-                        <td>
-                        
-                            <Input type="date" name="toDate" 
+                        <div className='inputBox'>
+                            <Input type="date" name="toDate"
                             {...register('toDate', { required: true, min: 0 })}/>
-                        
-                            {formState.errors.toDate?.type === "required" && 
-                            <span className='span'>Missing return date !</span>}
-                        </td>
-                    </tr>
+                            <div className='err'>
+                                {formState.errors.toDate?.type === "required" && 
+                                <span className='span'>Missing return date !</span>}
+                            </div>
+                        </div>
 
-                    <tr>
-                        <td className='adduploudbox'>
+                        <div className='adduploudbox'>
 
                             {preview ?  
                             <img src={preview} className="imgadd"
                             alt=''/>:null
                             }
-                        </td>
+                        </div>
 
-                        <td className='adduploudbox'>   
-                        <Button id='btnadd' size='small' color='secondary' variant="contained"> 
-                            <input id='btninput' type="file" accept="image/*" name="image"
-                            {...register('image', { required: true})}
-                            onChange={e  => handelChange(e)}
-                            /> 
-                        </Button>
-                        <Button  id='btnadd' type='submit' size='small' color='secondary' variant="contained">
-                            Add <SaveIcon/>
-                        </Button>
-                        {formState.errors.image?.type === "required" && 
-                        <span className='span'>Missing image !</span>} 
-                        </td>
-                    </tr>
-                </table>
+                        <div className='adduploudbox'>    
+                            <Button id='btnadd' size='small' color='secondary' variant="contained"> 
+                                <input id='btninput' type="file" accept="image/*" name="image"
+                                {...register('image', { required: true})}
+                                onChange={e  => handelChange(e)}
+                                /> 
+                            </Button>
+
+                            <Button  id='btnadd' type='submit' size='small' color='secondary' variant="contained">
+                                Add <SaveIcon/>
+                            </Button>
+                            <div className='err'>
+                                {formState.errors.image?.type === "required" && 
+                                <span className='span'>Missing image !</span>}
+                            </div>
+                        </div>
+                </div>
             </form> 
         </div>
     );
@@ -191,62 +167,3 @@ export default AddVacation;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// async function addProduct(vacation: VacationModel) {
-
-//     const authAxios = axios.create({
-    
-//         baseURL:'http://localhost:3001/api',
-//         headers: {
-//             Authorization : `Bearer ${localStorage.getItem('token')}` 
-//         }
-//     });
-
-//     try {
-//         const response = await authAxios.post<VacationModel>('/vacations/new-vacation',VacationModel.convertToFormData(vacation));
-//         const addedVacation = response.data;
-//         if(addedVacation.toDate < addedVacation.fromDate) {
-//             alert('the depart date cannot be bigger than return date')
-//         }
-//         else if(addedVacation.vacationID === undefined || null) {
-//             alert('Missing something check the fields') 
-            
-//         }else {
-//             store.dispatch({
-//                 type: ActionType.addNewVacation,
-//                 payload: addedVacation
-//             });
-//             history.push("/");
-//             alert("Vacation has been added. ID: " + addedVacation.vacationID);
-//             socket.emit("get-all-vacations");
-//         }
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// }

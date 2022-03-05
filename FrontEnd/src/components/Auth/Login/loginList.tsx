@@ -1,66 +1,51 @@
 import React from 'react';
-import axios from "axios";
 import { useForm } from "react-hook-form";
 import store from '../../../Redux/store';
 import UserModel from "../../../models/user-model";
+import AuthService from '../../../Service/authService';
 import { ActionType } from "../../../Redux/reducer";
 import { useHistory } from "react-router";
 import { NavLink } from 'react-router-dom';
 import { TextField, Button } from '@material-ui/core';
-import About from '../../About page/about';
-import globals from '../../../Service/globals';
-import './loginList.css';
+import './loginList.scss';
 
 
-const NewLoginList = ()  => {
+
+
+const LoginPage = ()  => { 
     
 
     const history = useHistory();
     const { register, handleSubmit , formState  } = useForm<UserModel>();
 
 
-    const login = (user: UserModel) => {
-
-        axios.post(globals.login ,user)
-        .then(response => { 
-
+    const login = async (user: UserModel) => { 
+        try {
+            const data = await AuthService.login(user);
             store.dispatch({
-            type: ActionType.getUser,
-            payload: response.data[0]
-            });
-
+                type: ActionType.getUser,
+                payload: data[0] 
+            });   
             store.dispatch({ 
-            type: ActionType.updateIsLogin,
-            payload: true 
+                type: ActionType.updateIsLogin,
+                payload: true  
             });
-            sendToken();
-            history.push('/');
-            alert("You Are Wellcom");
-        })
-        .catch(err => {
-            alert(err.response.data);
-            console.log(err.response.data);
-        });
+            history.push('/'); 
+        } catch (err) { 
+            return err;
+        }
     }
 
-    const sendToken = () => {
-
-        axios.post<UserModel>(globals.saveToken, store.getState().user)
-        .then(res => localStorage.setItem('token',res.data.token)) 
-        .catch(err => alert(err.data));
-    }
  
-
     return (
 
         <div className='LoginList'>
             <form onSubmit={handleSubmit(login)}>
         
                 <h2>Login please !</h2>
-                    <About/>
                 <div className='errorsbox'>
                         <TextField
-                            label="User Name"
+                            label="User Name" 
                             variant="filled"
                             size="small"
                             helperText="Type between 3-10 characters"
@@ -110,6 +95,5 @@ const NewLoginList = ()  => {
     );
 }
 
-export default NewLoginList;
 
-
+export default LoginPage;

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import  store  from "../../Redux/store";
 import { ActionType } from '../../Redux/reducer';
 import Button from '@material-ui/core/Button';
@@ -9,7 +9,8 @@ import { NavLink } from 'react-router-dom';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
 import EqualizerIcon from '@material-ui/icons/Equalizer';
 import { ImHome } from 'react-icons/im';
-import "./navbar.css";
+import alertService from '../../Service/alertService';
+import "./navbar.scss";
 
 
 
@@ -18,12 +19,12 @@ interface NavBarLoginState {
     isLogin: boolean;
     followedVacations: VacationModel[];
 }
-class NavBarLogin extends React.Component<{}, NavBarLoginState> {
+class NavBarLogin extends Component<{}, NavBarLoginState> {
 
 
     public constructor(props: {}) {
         super(props);
-        this.state = {
+        this.state = { 
             user: store.getState().user,
             isLogin: store.getState().isLogin,
             followedVacations: store.getState().followedVacations
@@ -40,8 +41,9 @@ class NavBarLogin extends React.Component<{}, NavBarLoginState> {
 
         store.dispatch({ 
             type: ActionType.logout,
-            payload: false
+            payload: false 
         });
+        alertService(`See You Soon ${this.state.user.userName}!`, 'info');
     }
     
     
@@ -55,18 +57,19 @@ class NavBarLogin extends React.Component<{}, NavBarLoginState> {
                <Grid className='boxx' container alignItems="center" justifyContent="flex-end" > 
         
   
-                {this.state.user.isAdmin === 1 ?
-                    <>
-                       
-                <Grid className="homeBtn" > 
-                    <NavLink className="NavLink"  to='/'>
-                       <Button id="btn2" size='small' variant="contained" color='secondary'>
-                            <ImHome id='ImHome' />Home
-                        </Button>
-                    </NavLink>
-                </Grid>
+                    {this.state.user.isAdmin === 1 ?
+                        <>
+                        
+                        <Grid className="homeBtn" > 
+                            <NavLink className="NavLink"  to='/'>
+                            <Button id="btn2" size='small' variant="contained" color='secondary'>
+                                    <ImHome id='ImHome' />Home
+                                </Button>
+                            </NavLink>
+                        </Grid> 
+
                         <Grid>
-                            <h2 className='admin'>Hello {this.state.user.firstName}</h2>
+                            <h2 className='admin'>Hello {this.state.user.userName}</h2>
                         </Grid>
 
                         <Grid >
@@ -81,13 +84,13 @@ class NavBarLogin extends React.Component<{}, NavBarLoginState> {
                                 <EqualizerIcon />
                                 <NavLink className="NavLink" to='/report'>Reports</NavLink>
                             </Button>
-                        </Grid>
-                     
-                        </>
-                    
-                        :
-                        <h2 className='user'>Hello {this.state.user.firstName}</h2>
-                    
+                            </Grid>
+                         
+                            </>
+                        
+                            :
+                            <h2 className='user'>Hello {this.state.user.userName}</h2>
+                        
                 }
 
                     <Grid> 

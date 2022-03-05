@@ -1,0 +1,38 @@
+.registerPage { 
+    display: inline-grid;
+    background: #ffffffbf;
+    padding: 30px;
+    color: #39393A;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 20px;
+    border: 3px solid #39393a91;
+    width: 600px;
+
+
+    .lableBox {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: 10px;
+        padding: 10px;
+    }
+
+    .box {
+        position: relative;
+        margin: 20px 10px;
+    }
+
+    .lableBox span{
+        font-family:'Segoe UI', Tahoma, Verdana, sans-serif;
+        color: red;
+        font-size: 15px;
+        border-bottom: red 1px solid;
+        position: absolute;
+        width: 100%;
+        left: 0;
+    }
+
+    .boxbtn , .boxbtn *{
+        margin: 10px;
+    }
+
+}

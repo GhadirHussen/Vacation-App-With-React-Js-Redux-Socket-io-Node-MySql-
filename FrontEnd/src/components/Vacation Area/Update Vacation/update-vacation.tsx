@@ -1,21 +1,22 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
-import { useForm ,Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { RouteComponentProps ,useHistory } from "react-router";
 import store from '../../../Redux/store';
 import VacationModel from "../../../models/vacation-model";
+import VacationService from '../../../Service/vacationService';
 import { ActionType } from "../../../Redux/reducer";
 import Input  from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
 import SaveIcon from '@material-ui/icons/Save';
 import io from 'socket.io-client';
-import './update-vacation.css';
+import alertService from '../../../Service/alertService';
+import './update-vacation.scss';
 
 
   
 interface RouterProps {
     id: string;
-  }
+}
   
 interface MatchIdProps extends RouteComponentProps<RouterProps>{}
 
@@ -29,24 +30,23 @@ const UpdateVacation: React.FC<MatchIdProps> = ({match})  => {
     const [data, setData] = useState<VacationModel>();
     const [preview , setPreview] = useState(null);
     const [imageName, setImageName] = useState(null);
-    const [image, setImage] = useState(null);
     let history = useHistory();
 
 
+    useEffect(() => {
+        (async function() {
+           const id = +match.params.id;
 
-      
-    let fechVacationData = async () => {
-   
-        const id = +match.params.id;
-        const result = await axios.get<VacationModel>(`http://localhost:3001/api/vacations/${id}`);
-        setData(result.data);
-        setImageName(result.data.imageName);
-    }
-  
+        try {
+            const vacations = await VacationService.fetchVacationByID(id);
+            setData(vacations);
+            setImageName(vacations.imageName);
 
-    useEffect(() => { 
-        fechVacationData();
-      }, []); 
+        } catch(err) {
+            return err;
+        }
+        })();
+    }, []);
 
   
     const dateFormat = (data :string) => { 
@@ -71,41 +71,30 @@ const UpdateVacation: React.FC<MatchIdProps> = ({match})  => {
       }, [data]);
         
 
-    const updateVacation = (vacation: VacationModel) => {
+
+    const updateVacation = async (vacation: VacationModel) => {
 
         const id = +match.params.id;
-        const authAxios = axios.create({
-          headers: {
-              Authorization : `Bearer ${localStorage.getItem('token')}` 
-          }
-      });
-
-      const url = 'http://localhost:3001/api/vacations/update-vacation/'
-
        
-
-        authAxios.put<VacationModel>(url+id,VacationModel.convertToFormData(vacation))
-        .then(response => {
-        const vacationToUpdate = response.data;
-
-        if(vacationToUpdate.vacationID === undefined || null) {
-            alert('Missing something check the fields');
+        try {
+            const vacationToUpdate = await VacationService.updateVacation(vacation, id);
+            if(vacationToUpdate.vacationID === undefined || null) {
+                alertService('Missing something check the fields', 'error');
+            }
+            else{
+                alertService("Vacation has been updated", 'success');
+                store.dispatch({
+                    type: ActionType.updateVacation,
+                    payload: vacationToUpdate
+                }); 
+                history.push("/");
+                socket.emit("get-all-vacations"); 
+            }
+        } catch(err) {
+            return err;
         }
-        else{
-            store.dispatch({
-                type: ActionType.updateVacation,
-                payload: vacationToUpdate
-            }); 
-            history.push("/");
-            alert("Vacation has been updated. ID: " + vacationToUpdate.vacationID);
-            socket.emit("get-all-vacations"); 
-        }
-        })
-        .catch(err => {
-            alert(err.response.data);
-            console.log(err.response.data);
-        });
     }
+
 
     const handelChange = (e:  React.ChangeEvent<HTMLInputElement>) => {
         const filePreview = URL.createObjectURL(e.target.files[0]);
@@ -113,40 +102,40 @@ const UpdateVacation: React.FC<MatchIdProps> = ({match})  => {
     }
  
 
-    return ( 
-        <div className="edit-container">
+
+    return (
+
+        <div className="update-container">
 
             <h2>Update Your Vacation</h2>
-
-                <form onSubmit={handleSubmit(updateVacation)}> 
-   
-                    <table>
-                        <tr>
-                            <th>Destination</th>
-                            <th>Price</th>
-                        </tr> 
-
-                        <tr>  
-                            <td>
+            
+            <form onSubmit={handleSubmit(updateVacation)}> 
+                <div className='detailBox'>
+            
+                        <div className='inputBox'>
                             <Input type="text" name="destination" 
-                             {...register('destination', { required: true, minLength: 3 , maxLength:15 })}/>  
+                            {...register('destination', { required: true, minLength: 3 ,maxLength:15 })}/>
+
+                            <div className='err'>
                                 {formState.errors.destination?.type === "required" &&
-                                    <span className='span'>Missing destination !</span>
+                                <span className='span'>Missing destination !</span>
                                 }
                                 {formState.errors.destination?.type === "minLength" &&
-                                    <span className='span'>Destination name too short !</span>
+                                <span className='span'>Destination name too short !</span>
                                 }
                                 {formState.errors.destination?.type === "maxLength" &&
-                                    <span className='span'>Destination name is too long !</span>
+                                <span className='span'>Destination name is too long !</span>
                                 }
-                            </td>
-                
-                            <td>
-                                <Input type="number"  name="price"
-                                {...register("price", { required: true , min: 0 , minLength: 3 ,maxLength:4})}/>$ 
-                                {formState.errors.price?.type === "required" &&
-                                <span className='span'>Missing price !</span>
-                                }
+                            </div>
+                        </div>
+
+                        <div className='inputBox' >
+                            <Input type="number"  name="price" placeholder='$'
+                            {...register("price", { required: true ,min:0, minLength: 3 ,maxLength: 4})}/>
+                            
+                            <div className='err'>
+                                {formState.errors.price?.type === "required" && 
+                                <span className='span'>Missing Price</span>}
                                 {formState.errors.price?.type === "min" &&
                                 <span className='span'>Price can't be negative !</span>
                                 }
@@ -155,90 +144,66 @@ const UpdateVacation: React.FC<MatchIdProps> = ({match})  => {
                                 }
                                 {formState.errors.price?.type === "maxLength" &&
                                 <span className='span'>maximum 4 numbers !</span>
-                                }
-                            </td>
-                        </tr>
+                            }
+                            </div> 
+                        </div>
 
-                        <tr className='dis'>
-                            <th colSpan={2}>Description</th>
-                        </tr>
-
-                        <tr>
-                            <td colSpan={2}>
-                                <textarea
-                                placeholder="Write description about new vacation"
-                                name="description"
-                                {...register('description', { required: true, min: 5 })} 
-                                />
+                        <div className='description'>
+                            <textarea
+                            placeholder="Write description about new vacation"
+                            name="description"  className='input'
+                            {...register('description', { required: true, minLength:5 })} 
+                            />
+                            <div className='err'>
                                 {formState.errors.description?.type === "required" &&
-                                    <span className='span'>Missing description !</span>
-                                }
-                                {formState.errors.description?.type === "minLength" &&
-                                <span className='span'>Description too short.</span>}
-                            </td>
-                        </tr>
+                                <span className='span'>Missing description !</span>}
+                                {formState.errors.description?.type === "minLength" && <span>description too short.</span>}
+                            </div>
+                        </div>
 
-                        <tr>
-                            <th>Depart</th> 
-                            <th>Return</th>
-                        </tr>
+                        <div className='inputBox'>
+                            <Input type="date" name="fromDate"  
+                            {...register('fromDate', { required: true, min: 0 })}/> 
+                            <div className='err'>
+                                {formState.errors.fromDate?.type === "required" &&
+                                <span className='span'>Missing depart date !</span>}
+                            </div>
+                        </div>
 
-                        <tr>
-                            <td>
-                                <Input type="dateFormat" name="fromDate" disabled
-                                 {...register('fromDate')}/>
-                                {/* {formState.errors.fromDate?.type === "required" && 
-                                <span className='span'>Missing depart date !</span>} */}
-
-                                <Input type="date" name="fromDate" 
-                                {...register('fromDate', { required: true})}/> 
+                        <div className='inputBox'>
+                            <Input type="date" name="toDate"
+                            {...register('toDate', { required: true, min: 0 })}/>
+                            <div className='err'>
                                 {formState.errors.toDate?.type === "required" && 
                                 <span className='span'>Missing return date !</span>}
-                            </td>
+                            </div>
+                        </div>
 
-                            <td> 
-                                <Input type="dateFormat" name="toDate" disabled
-                                {...register('toDate', { required: false})}/>
-                             
+                        <div className='adduploudbox'>    
+                            <Button id='btnadd' size='small' color='secondary' variant="contained"> 
+                                <input id='btninput' type="file" accept="image/*" name="image"
+                                {...register('image', { required: false})}
+                                onChange={e  => handelChange(e)}
+                                /> 
+                            </Button> 
 
-                                <Input type="date" name="toDate" defaultValue={dateFormat}
-                                {...register('toDate', { required: true})}/> 
-                                {formState.errors.toDate?.type === "required" && 
-                                <span className='span'>Missing return date !</span>}
-                            </td>
-                        </tr>
- 
-                        <tr>
-                            <td className='adduploudbox'>
-                            { 
-                        preview
-                        ?
-                        <img src={preview}/> 
-                        :
-                        <img src={`/assets/images/vacations/${imageName}`} alt='' />
-                        
-                        } 
-                            </td> 
-
-                            <td className='adduploudbox'>   
-                            {formState.errors.image?.type === "required" && 
-                                <span className='span'>Please choose image !</span>}
-                                <Button id='btnadd' size='small' color='secondary' variant="contained">
-                                    <input id='btninput' type="file" accept="image/*" name="image"
-                                    {...register('image')} 
-                                    onChange={handelChange}
-                                    />
+                            <Button  id='btnadd' type='submit' size='small' color='secondary' variant="contained">
+                                Add <SaveIcon/>
                             </Button>
-                
-                                <Button type='submit' size='small' color='secondary' variant="contained">
-                                    Add <SaveIcon/>
-                                </Button>
-                            </td> 
-                        </tr>
-                    </table>
-                   
-            </form>
 
+                            <div>
+                                { 
+                                    preview
+                                    ?
+                                    <img src={preview}/> 
+                                    :
+                                    <img src={`/assets/images/vacations/${imageName}`} alt='' />
+                                } 
+                            </div> 
+ 
+                        </div>
+                </div>
+            </form> 
         </div>
     );
 }
@@ -246,43 +211,3 @@ const UpdateVacation: React.FC<MatchIdProps> = ({match})  => {
 export default UpdateVacation; 
 
 
-
-
-
-
-
-// const updateVacation = async (vacation: VacationModel) => {
-
-//     const id = +match.params.id;
-//     const authAxios = axios.create({
-//       headers: {
-//           Authorization : `Bearer ${localStorage.getItem('token')}` 
-//       }
-//   });
-
-//   const url = 'http://localhost:3001/api/vacations/update-vacation/'
-
-//     try {
-
-//         const response = await authAxios.put(url+id,VacationModel.convertToFormData(vacation));
-//         const Vacation = response.data;
-
-//         if(Vacation.toDate < Vacation.fromDate) {
-//             alert('the depart date cannot be bigger than return date')
-//         }
-//         else if(Vacation.vacationID === undefined || null) {
-//             alert('Missing something check the fields');
-//         }
-//         store.dispatch({
-//             type: ActionType.updateVacation,
-//             payload: Vacation
-//         });
-//         history.push("/");
-//         alert("Vacation has been updated. ID: " + Vacation.vacationID);
-//         socket.emit("get-all-vacations"); 
-//     }
-//     catch (error) {
-//          console.log(error);
-//     }
-
-// }

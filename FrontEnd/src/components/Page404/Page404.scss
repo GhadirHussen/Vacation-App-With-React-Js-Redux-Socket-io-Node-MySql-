@@ -1,0 +1,19 @@
+.Page404{
+    
+    height: 90%;
+    background-image: url('./404.png');
+    background-size: cover;
+    background-position: center;
+    width: 50%;
+    margin: auto;
+    position: relative;
+
+    .btn {
+        margin-top: 20px;
+    }
+
+    .NavLink {
+        text-decoration: none; 
+    }
+}
+ 

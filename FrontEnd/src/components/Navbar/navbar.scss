@@ -1,0 +1,58 @@
+.navbarLogin{
+    font-weight: bold;
+
+    .boxx {
+        color: white;
+    
+       >* > * {
+         margin: 10px;  
+       } 
+
+        
+        .homeBtn{
+            position: absolute;
+            left: 0;
+        }       
+
+        .user{
+            position: absolute;
+            left: 10px;
+        }
+
+        .admin{
+            position: absolute;
+            left: 120px;
+            top: -5px;
+        }
+
+        .NavLink{
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .NavLink:visited{
+            color: black
+        }
+
+
+        #btn{
+            font-weight: bold;
+        }
+
+
+        #btn2{
+            font-weight: bold;
+            width: 80px;
+            font-size: 15px;
+            padding-left: 30px;
+        }
+
+
+        #ImHome {
+            position: absolute;
+            left: 5px;
+            top: 8px;
+        }
+
+    }
+
+}

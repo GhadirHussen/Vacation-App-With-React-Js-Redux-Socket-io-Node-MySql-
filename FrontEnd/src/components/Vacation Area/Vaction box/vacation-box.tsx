@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
+import VacationService from '../../../Service/vacationService';
 import  store  from "../../../Redux/store";
 import { ActionType } from '../../../Redux/reducer';
 import { Unsubscribe } from "redux";
@@ -16,9 +16,9 @@ import ClearIcon from '@material-ui/icons/DeleteForever';
 import io from 'socket.io-client';
 import { RiEmotionNormalLine } from 'react-icons/ri';
 import { FaRegSmileBeam } from 'react-icons/fa';
-import globals from '../../../Service/globals';
-import axiosJWT from '../../../Service/axiosJWT';
-import './vacation-box.css';
+import alertService from '../../../Service/alertService';
+import './vacation-box.scss';
+
 
 
 interface myProps {
@@ -63,86 +63,81 @@ class VactionBox extends Component<myProps, VactionBoxState> {
         // },100) 
     } 
 
-
-    private followVacation = () => {
+    private followVacation = async () => {
         const vacationID = +this.props.vacation.vacationID;
         const userID = +this.state.user.userID;
         const sendInfo = {
             user: userID, vacation: vacationID
         };
         
-        axios.post<VacationModel>(globals.followVacation ,sendInfo)
-        .then(res => {
+        try {
+            await VacationService.followVacation(sendInfo);
             this.props.vacation.numFollowers += 1;
             this.updateState();
-        })
-        .catch(err =>console.log(err));
+        } catch(err) {
+            return err; 
+        }
+   
     } 
 
-    private removeVacation = () => {
+    private removeFollow = async () => {
        
-        const vacationID = +this.props.vacation.vacationID;
-        const userID = +this.state.user.userID;
-        axios.delete<VacationModel>(` ${globals.removefollowVacation}/${vacationID}/${userID}`)
-        .then(res => {
+        try {
+            const vacationID = +this.props.vacation.vacationID;
+            const userID = +this.state.user.userID;
+
+            await VacationService.removeFollow(vacationID, userID);
             this.props.vacation.numFollowers -= 1;
             this.props.vacation.follow = false;
             this.setState({ vacations : this.state.vacations});
             this.updateState();
-        })
-        .catch(err => alert(err.message));
+
+        } catch(err) {
+            return err;
+        }
+
     }
- 
-    
-    private updateState = () => {
-       
-        axios.get<VacationModel[]>(globals.getfollowVacation + this.state.user.userID)
-        .then(res => res.data)
-        .then(response => {
+
+    private updateState = async () => {
+
+        try {
+            const folowers = await VacationService.getfollowVacation(this.state.user.userID);
             store.dispatch({
                 type: ActionType.getFollowedVacations,
-                payload: response
+                payload: folowers 
             });
             this.props.vacation.follow = false;
             this.props.update()
-        })
-        .catch(err => alert(err));  
+        } catch (err) {
+            return err;
+        }
     }  
 
- 
-    private deleteVacation = (vacation: VacationModel) => {
-        const answer = window.confirm("Are you sure?");
-        if (!answer) {
-            return;
-        }
+    
+    private deleteVacation = async (vacation: VacationModel) => {
 
-        const options = {
-            method: "DELETE",
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('token'),
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(vacation)
-        };
-        
-        fetch(globals.reamoveVacation + vacation.vacationID, options)
-            .then(() => {
-                alert("Vacation has been successfully deleted.");
-                store.dispatch({
-                    type: ActionType.deleteVacation,
-                    payload: vacation.vacationID
-                });
-                this.socket.emit("get-all-vacations");
-            })
-            .catch(err => alert(err.message));
+        const ok = window.confirm('Are You Shore ?');
+        if(!ok) return;
+        try {
+
+            await VacationService.deleteVacation(vacation);
+            store.dispatch({
+                type: ActionType.deleteVacation,
+                payload: vacation.vacationID
+            });
+            alertService("Vacation has been deleted.", 'success');
+            this.socket.emit("get-all-vacations");
+
+        } catch(err) {
+            return err; 
+        }
     }
  
 
-    public render(): JSX.Element { 
+    public render(): JSX.Element {  
         return (
             
-            <div className='Container'>
+            <div className='vacationBox'>
             <Card className="card">
                 <CardMedia>
 
@@ -180,7 +175,7 @@ class VactionBox extends Component<myProps, VactionBoxState> {
                     </div>
 
                 </CardContent> 
-                {this.state.user.isAdmin ?  
+                {this.state.user.isAdmin ?   
                    
                     <>
                         
@@ -212,7 +207,7 @@ class VactionBox extends Component<myProps, VactionBoxState> {
                          
                     </Button>
                     :
-                    <Button className="btnFollow"  variant="outlined" size="small" color="secondary" onClick={this.removeVacation}>
+                    <Button className="btnFollow"  variant="outlined" size="small" color="secondary" onClick={this.removeFollow}>
                         Unfollow | <FaRegSmileBeam size="2em"/>
                     </Button>
                    

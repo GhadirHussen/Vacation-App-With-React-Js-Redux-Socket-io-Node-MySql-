@@ -6,9 +6,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Grid from '@material-ui/core/Grid';
 import  UserModel  from '../../models/user-model';
-import globals from '../../Service/globals';
+import AuthService from '../../Service/authService';
 import  NavBarLogin  from '../Navbar/navbar';
-import './header.css';
+import './header.scss';
 
 
 interface HeaderState {
@@ -38,44 +38,37 @@ class Header extends Component<{}, HeaderState> {
 
     componentDidMount = () => {
         if (store.getState().user.userID === undefined) {
-            this.getToken();
+            this.getCurrentUser();
         }
     }
 
-    private getToken = () => {
-        const options = {
-            method: "GET",
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('token')
+    private getCurrentUser = async () => {
+
+        try {
+            const currentUser = await AuthService.getCurrentUser();
+            if (currentUser.name === 'JsonWebTokenError') {
+                store.dispatch({
+                    type: ActionType.updateIsLogin, 
+                    payload: false
+                });
+                return;
             }
-        };
-  
-        fetch(globals.getToken, options)
-            .then(response => response.json())
-            .then(res => {
-                if (res.name === 'JsonWebTokenError') {
-                    store.dispatch({
-                        type: ActionType.updateIsLogin,
-                        payload: false
-                    });
-                    return;
-                }
-                store.dispatch({
-                    type: ActionType.getUser,
-                    payload: res.user
-                });
-            
-                store.dispatch({
-                    type: ActionType.updateIsLogin,
-                    payload: true
-                });
-            })
-            .catch(err =>  console.log(err));
+            store.dispatch({
+                type: ActionType.getUser,
+                payload: currentUser.user
+            });
+        
+            store.dispatch({
+                type: ActionType.updateIsLogin,
+                payload: true
+            });
+
+        } catch(err) {
+            return err;
+        }
+
     }
 
-
-
- 
     public render(): JSX.Element {
         return (
             <div className='header'>

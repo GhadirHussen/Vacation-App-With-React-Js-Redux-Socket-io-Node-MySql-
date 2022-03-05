@@ -7,4 +7,6 @@ export default class UserModel {
     public password: string;
     public isAdmin: number;
     public token : string;
+
 }
+  

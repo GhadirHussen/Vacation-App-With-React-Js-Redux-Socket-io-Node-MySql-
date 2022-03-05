@@ -21,11 +21,12 @@ export default class VacationModel {
         myFormData.append("toDate", vacation.toDate.toString());
         myFormData.append("price", vacation.price);
          
-        if(vacation.image.item(0) == null || undefined) {
+        if(vacation.image.item(0) === null || undefined) {
             myFormData.append("imageName", vacation.imageName);
         }else {
             myFormData.append("image", vacation.image.item(0));
         }
+
         return myFormData;
     }
 }

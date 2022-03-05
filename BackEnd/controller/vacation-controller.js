@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const vacationLogic = require('../business-logic/vacation-logic')
+const vacationLogic = require('../business-logic/vacation-dal')
 const verifyLogged = require('../middleware/verify-logged-in');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
@@ -9,34 +9,36 @@ const VacationModel = require('../Models/VacationModel');
 const { addVacationValidation } = require('../validation/validation');
 
 
+
 //get all vacation 
 router.get('/', async (request, response) => {
     try {
         const vacations = await vacationLogic.getAllVacations();
-        response.json(vacations);
+        response.status(200).json(vacations);
     } catch (error) {
         response.status(500).send(error);
     }
 });
+
 
 //get vaccation by id
 router.get('/:id', async (request, response) => {
     try {
         const id = +request.params.id;
         const vacation = await vacationLogic.getOneVacation(id);
-        response.json(vacation[0]);
-    } catch (error) {
+        response.status(200).json(vacation[0]);
+    } catch (error) { 
         response.status(500).send(error);
 
     }
 });
 
-//insert follow vacation
+//insert follow vacation 
 router.post('/followVacation', async (request, response) => {
     try {
         const info = request.body;
         const sendInfo = await vacationLogic.followVacation(info);
-        response.json(sendInfo);
+        response.status(201).json(sendInfo);
     } catch (error) {
         response.status(500).send(error);
     }
@@ -47,7 +49,7 @@ router.get('/get-followed-vacations/:id', async (request, response) => {
     try {
         const id = request.params.id;
         const vacations = await vacationLogic.getFollowedVacations(id);
-        response.json(vacations);
+        response.status(200).json(vacations);
     } catch (error) {
         response.status(500).send(error);
     }
@@ -71,7 +73,7 @@ router.post('/new-vacation' , addVacationValidation, verifyLogged.verifyToken, a
 
     try {
         
-        jwt.verify(request.token, 'secretkey', (err, authData) => {
+        jwt.verify(request.token, process.env.JWT, (err, authData) => {
             if (authData.user.isAdmin !== 1) {
                 throw "Error !"
             }
@@ -95,8 +97,6 @@ router.post('/new-vacation' , addVacationValidation, verifyLogged.verifyToken, a
         const fileName = randomName + extension;
         vacation.imageName = fileName;
         file.mv('../FrontEnd/public/assets/images/vacations/' + fileName);
-        // vacation.imageName = randomName + extension;
-
 
         const newVacation = await vacationLogic.addNewVacation(vacation);
 
@@ -111,7 +111,7 @@ router.post('/new-vacation' , addVacationValidation, verifyLogged.verifyToken, a
 //delete vacation **valid only for the admin
 router.delete("/delete-vacation/:id", verifyLogged.verifyToken, async (request, response) => {
     try {
-        jwt.verify(request.token, 'secretkey', (err, authData) => {
+        jwt.verify(request.token, process.env.JWT, (err, authData) => {
             if (authData.user.isAdmin !== 1) {
                 throw "Error !"
             }
@@ -135,44 +135,47 @@ router.put('/update-vacation/:id', addVacationValidation, verifyLogged.verifyTok
     async (request, response) => {
 
         try {
-            jwt.verify(request.token, 'secretkey', (err, authData) => {
+            jwt.verify(request.token, process.env.JWT, (err, authData) => {
                 if (authData.user.isAdmin !== 1) {
                     throw "Error !"
                 }
             });
-            
+
             const id = +request.params.id; 
             const randomName = uuid.v4();
             const vacation =  new VacationModel(request.body);
+
             vacation.vacationID = id;
 
             if(vacation.fromDate >= vacation.toDate || vacation.toDate <= vacation.fromDate){
                 response.status(400).send('The Depart date cannot be bigger than Return date !');
                 return;
             }
-        
+
+          
              if (request.files) {
                 const file = request.files.image;
                 const extension = file.name.substr(file.name.lastIndexOf('.'));
                 const fileName = randomName + extension;
                 vacation.imageName = fileName;
                 file.mv('../FrontEnd/public/assets/images/vacations/' + fileName);
-                // vacation.imageName = randomName + extension;
-            }
-
+            }  
             const updatedVacation = await vacationLogic.updateVacation(vacation);
-            response.json(updatedVacation);
-
-            if (updatedVacation === null) {
-                response.sendStatus(404);
-                return;
-            } 
+        
+            response.json(updatedVacation).status(201);
+ 
         } catch (error) {
             response.status(500).send(error);
-        }
+        } 
 });
 
-
-
+const getAllVacations = async () => {
+    try {
+        const vacations = await vacationLogic.getAllVacations();
+        return vacations;
+    } catch (error) {
+        return error;
+    } 
+} 
  
-module.exports = router;
+module.exports = {router, getAllVacations};

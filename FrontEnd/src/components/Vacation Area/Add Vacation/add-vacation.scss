@@ -1,0 +1,84 @@
+.add-container {
+
+  background: #ffffffbf;
+  padding: 30px;
+  font-family: 'Roboto Condensed', sans-serif;
+  width: 500px;
+  margin:auto;
+  color: black;
+  font-weight: bold;
+  height: 550px;
+
+
+
+  h2 {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  }
+  .detailBox {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  
+    .inputBox {
+      position: relative;
+    }
+    div {
+      margin-top: 10px;
+    }
+
+    .description{
+      position: relative;
+      grid-column: span 2;
+
+      textarea {
+        width: 100%;
+        height: 50px;
+        color: black;
+        font-weight: bold;
+        text-align: center;
+        resize: none;
+      }
+    }
+
+    .adduploudbox {
+
+      position: relative;
+      grid-column: span 2;
+
+      img {
+        border-radius: 10px;
+        box-shadow: 10px 10px 5px rgb(110, 110, 110);
+        width: 100%;
+        height: 200px;
+      }
+
+      #btninput {
+        width: 90px;
+      }
+    
+       #btnadd{
+        margin: 3px;
+        height: 29px;
+      }
+     
+
+    }
+
+    
+    .span {
+      display: block;
+      color: red;
+      font-size: small;
+      position: absolute;
+      bottom: -10px;
+      width: 100%;
+      margin: 2px;
+    }
+
+    .error {
+      color: red;
+    } 
+  
+  }
+
+
+}

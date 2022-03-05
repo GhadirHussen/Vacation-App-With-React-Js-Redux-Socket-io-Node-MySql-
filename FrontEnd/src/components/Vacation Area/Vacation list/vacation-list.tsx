@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import  store  from "../../../Redux/store";
 import { ActionType} from '../../../Redux/reducer';
-import axios from 'axios';
+import VacationService from '../../../Service/vacationService';
 import  VactionBox  from '../Vaction box/vacation-box';
 import  VacationModel  from '../../../models/vacation-model';
 import  UserModel  from '../../../models/user-model';
@@ -10,10 +10,8 @@ import io from 'socket.io-client';
 import Carousel from 'react-elastic-carousel';
 import { Card } from '@material-ui/core';
 import AddVacation  from '../Add Vacation/add-vacation';
-import NewLoginList from '../../Auth/Login/loginList';
-import globals from '../../../Service/globals';
-import axiosJWT from '../../../Service/axiosJWT';
-import './vacation-list.css';
+import LoginPage from '../../Auth/Login/loginList';
+import './vacation-list.scss';
 
 
 
@@ -51,18 +49,20 @@ export class VacationList extends Component<any, HomeState> {
         this.unsubscribeStore();
     }
 
-    public componentDidMount = () => { 
+    public componentDidMount = async () => { 
     
         if (store.getState().vacations.length === 0) {
-            axios.get(globals.vacation)
-            .then(response => {
 
-            store.dispatch({
-            type: ActionType.getAllVacations,
-            payload: response.data
-            });
-            })
-            .catch(err => alert(err));
+            try {
+                const vacations = await VacationService.fetchVacation();
+                store.dispatch({
+                    type: ActionType.getAllVacations,
+                    payload: vacations 
+                });
+
+            } catch(err) {
+                return err;
+            }
         }
         this.socket.on("get-all-vacations", (vacations: VacationModel[]) => {
 
@@ -76,18 +76,18 @@ export class VacationList extends Component<any, HomeState> {
     }
 
 
-    private checkFollowedVacations = () => {
+    private checkFollowedVacations = async () => {
         if (this.state.isLogin === true && this.state.followedVacations.length <= 0) {
-           
-            axios.get(globals.getfollowVacation + this.state.user.userID)
-                .then(response => {
-                    store.dispatch({
-                        type: ActionType.getFollowedVacations,
-                        payload: response.data
-                    });
-                    this.vacationfollow();
-                })
-                .catch(err => alert(err));
+            try {
+                const folowers = await VacationService.getfollowVacation(this.state.user.userID);
+                store.dispatch({
+                type: ActionType.getFollowedVacations,
+                payload: folowers 
+                });
+                this.vacationfollow();
+            } catch (err) {
+                return err;
+            }
         }
     }
 
@@ -106,12 +106,11 @@ export class VacationList extends Component<any, HomeState> {
     }
 
     public render(){
- 
-     
-           
+  
 
         return (
             <div className="home">  
+
                 {this.state.vacations.length === 0 && this.state.user.isAdmin? 
                 <AddVacation/>
                
@@ -132,7 +131,7 @@ export class VacationList extends Component<any, HomeState> {
                         
                             </Carousel>
                         : 
-                        <NewLoginList/>
+                        <LoginPage/>
                         }
                         
                     </>

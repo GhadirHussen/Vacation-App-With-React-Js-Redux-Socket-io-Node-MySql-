@@ -1,9 +1,7 @@
 import React, { useState ,useEffect} from 'react'
-import axios from "axios";
 import {Bar} from 'react-chartjs-2';
-import VacationModel from '../../models/vacation-model';
-import globals from '../../Service/globals';
-import './report.css';
+import vacationService from '../../Service/vacationService';
+import './report.scss';
 
 
 const Report = ()  => {
@@ -12,23 +10,24 @@ const Report = ()  => {
     const [vacatioID , setVacatioID] = useState([]);
     const [followers , setFollowers] = useState([]);
 
+    
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
 
-     useEffect(() => {
-        const intervalId = setInterval(() => {
-            axios.get<VacationModel[]>(globals.vacation)
-            .then(response => {
-                const vacation = response.data;
+            const result = await vacationService.fetchVacation();
+
+                const vacation = result;
                 const arrID = [];
                 const follower =[];
 
                 for(const prop of vacation) {
                     arrID.push(prop.destination);
                     follower.push(prop.numFollowers);
+                    
                 }
                 setVacatioID(arrID);
                 setFollowers(follower);
-            })
-            .catch(err => console.log(err));
+      
         }, 100);
 
         return () => clearInterval(intervalId);

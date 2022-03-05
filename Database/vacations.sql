@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 02, 2021 at 12:20 AM
+-- Generation Time: Mar 05, 2022 at 08:06 PM
 -- Server version: 10.4.18-MariaDB
 -- PHP Version: 7.3.27
 
@@ -28,20 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `followvacations` (
-  `userID` int(11) NOT NULL,
-  `vacationID` int(11) NOT NULL
+  `vacationID` int(11) NOT NULL,
+  `userID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `followvacations`
---
-
-INSERT INTO `followvacations` (`userID`, `vacationID`) VALUES
-(2, 2),
-(4, 1),
-(2, 4),
-(4, 3),
-(3, 2);
 
 -- --------------------------------------------------------
 
@@ -54,7 +43,7 @@ CREATE TABLE `users` (
   `firstName` varchar(10) NOT NULL,
   `lastName` varchar(10) NOT NULL,
   `userName` varchar(10) NOT NULL,
-  `password` varchar(30) NOT NULL,
+  `password` varchar(500) NOT NULL,
   `isAdmin` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -63,12 +52,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`userID`, `firstName`, `lastName`, `userName`, `password`, `isAdmin`) VALUES
-(1, 'admin', 'admin', 'admin', 'admin', 1),
-(2, 'hussen', 'hussen', 'hussen', 'hussen', 0),
-(3, 'user', 'user', 'user', 'user', 0),
-(4, 'neel', 'neel', 'neel', 'neel', 0),
-(6, 'ghadir', 'ghadir', 'ghadir', 'ghadir', 0),
-(10, 'user2', 'user2', 'user2', 'user2', 0);
+(67, 'User', 'User', 'User', '$2b$10$ltVzFozERzQHn5z.3cDIPesFT.PizUaUwIsMWi8oLYnXiBnM2/A..', 0),
+(68, 'Test', 'Test', 'Test', '$2b$10$flm.iJdTTgSdeQT/QG9BH.yrZoD3im6em9cHzS5QtAq9qv3xfL9cm', 0),
+(69, 'Admin', 'Admin', 'Admin', '$2b$10$FVawiia3j5SAYGy1SSy3jOI6nrWcvRnvim19LMQEPEon/2iejNZby', 1);
 
 -- --------------------------------------------------------
 
@@ -91,11 +77,14 @@ CREATE TABLE `vacations` (
 --
 
 INSERT INTO `vacations` (`vacationID`, `description`, `destination`, `imageName`, `fromDate`, `toDate`, `price`) VALUES
-(1, 'bora bora', 'bora bora', '22dfffa5-2e55-46d8-b2a3-36f16438169e.jpeg', '2021-10-13', '2021-10-28', 499),
-(2, 'Phuket it is a nice vacation ', 'Phuket', '16448db5-4f30-413d-a7f8-6ec4e6f44dec.jpg', '2021-10-15', '2021-11-04', 412),
-(3, 'Dubai', 'Dubai', 'd1cb5f11-da5e-4b96-ac95-f3291939ed5b.jpg', '2021-10-27', '2021-11-04', 342),
-(4, 'paris', 'paris', '69c29ee4-51f2-4935-8d45-7d22982ee4d1.jpg', '2021-10-13', '2021-11-04', 342),
-(5, 'Austria', 'Austria', '376c8cf1-3e45-4270-b158-63afab3382fd.jpg', '2021-10-13', '2021-10-21', 299);
+(2, 'nice desination :) ', 'bora bora', 'e17f3edb-0e98-4f45-9936-a7394f025561.jpeg', '2022-02-01', '2022-02-16', 699),
+(3, 'very good destinaion', 'Phuket', '37e125b4-09f0-49de-bfee-8b3a6ba71a58.jpg', '2022-03-15', '2022-03-30', 599),
+(4, 'paris ', 'paris', '010c309b-3e21-4431-90f4-3f0cb4088968.jpg', '2022-03-10', '2022-03-22', 333),
+(5, 'dubai ', 'Dubai', 'fe54ace1-268a-4d6a-b3f6-c728c344560d.jpg', '2022-02-23', '2022-02-26', 449),
+(7, 'Barcelona', 'Barcelona', '90a11a42-88c9-423e-83cd-5e3d9487b4aa.jpg', '2021-06-08', '2021-08-14', 420),
+(21, 'it is nice Switzerland', 'Switzerland', '31ed7c5b-158a-46c9-b05c-0521283621a7.jpg', '2022-03-02', '2022-03-31', 500),
+(22, 'Roma is a history city', 'Roma', '30e7ea60-de0f-4be5-b2eb-b0e72f1c628f.jpg', '2022-04-12', '2022-04-16', 300),
+(51, 'Austria', 'Austria', 'a87c7654-4ab3-4851-a952-e5ca5450f1ca.jpg', '2022-03-10', '2022-03-15', 449);
 
 --
 -- Indexes for dumped tables
@@ -105,8 +94,8 @@ INSERT INTO `vacations` (`vacationID`, `description`, `destination`, `imageName`
 -- Indexes for table `followvacations`
 --
 ALTER TABLE `followvacations`
-  ADD KEY `FK_vacation` (`userID`),
-  ADD KEY `FK_user` (`vacationID`);
+  ADD KEY `FK_user` (`userID`),
+  ADD KEY `FK_vacation` (`vacationID`);
 
 --
 -- Indexes for table `users`
@@ -128,13 +117,13 @@ ALTER TABLE `vacations`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `vacations`
 --
 ALTER TABLE `vacations`
-  MODIFY `vacationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `vacationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- Constraints for dumped tables
@@ -144,8 +133,8 @@ ALTER TABLE `vacations`
 -- Constraints for table `followvacations`
 --
 ALTER TABLE `followvacations`
-  ADD CONSTRAINT `FK_user` FOREIGN KEY (`vacationID`) REFERENCES `vacations` (`vacationID`),
-  ADD CONSTRAINT `FK_vacation` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`);
+  ADD CONSTRAINT `FK_user` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`),
+  ADD CONSTRAINT `FK_vacation` FOREIGN KEY (`vacationID`) REFERENCES `vacations` (`vacationID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

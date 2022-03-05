@@ -13,6 +13,10 @@ body   {
   background-size: cover;
   background-repeat: no-repeat;
   width: 100%;
+}
+
+* {
+  text-decoration: none;
 
 }
 
